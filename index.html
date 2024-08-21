@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الشحنات</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            width: 70%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-size: 16px;
+        }
+
+        input[type="text"], select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        button#add-shipment, button#save-changes, button#cancel-edit {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #0275d8;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        button#add-shipment:hover, button#save-changes:hover, button#cancel-edit:hover {
+            background-color: #025aa5;
+        }
+
+        .success-message, .error-message {
+            display: none;
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .success-message {
+            background-color: #5bc0de;
+        }
+
+        .error-message {
+            background-color: #d9534f;
+        }
+
+        .edit-form {
+            display: none;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .shipment-item {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .shipment-item button {
+            background-color: #d9534f;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .shipment-item button:hover {
+            background-color: #c9302c;
+        }
+
+        .shipment-item button.edit-btn {
+            background-color: #5bc0de;
+        }
+
+        .shipment-item button.edit-btn:hover {
+            background-color: #31b0d5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>إدارة الشحنات</h1>
+    
+    <div class="search-container">
+        <input type="text" id="search-number" placeholder="ابحث برقم الشحنة" oninput="searchShipments()">
+    </div>
+
+    <label for="shipment-number">رقم الشحنة:</label>
+    <input type="text" id="shipment-number" placeholder="أدخل رقم الشحنة">
+
+    <label for="status">حالة الشحنة:</label>
+    <select id="status">
+        <option value="نم الشراء">نم الشراء</option>
+        <option value="تم الشحن إلى مخازننا في الصين">تم الشحن إلى مخازننا في الصين</option>
+        <option value="تم الشحن إلى مخازننا في الإمارات">تم الشحن إلى مخازننا في الإمارات</option>
+        <option value="تم الشحن إلى العراق">تم الشحن إلى العراق</option>
+        <option value="وصل إلى العراق">وصل إلى العراق</option>
+        <option value="قيد التجهيز والتغليف">قيد التجهيز والتغليف</option>
+        <option value="سيصل الطلب إليك خلال أقل من 24 ساعة انتبه إلى هاتفك">سيصل الطلب إليك خلال أقل من 24 ساعة انتبه إلى هاتفك</option>
+    </select>
+
+    <button id="add-shipment">إضافة شحنة</button>
+    
+    <div class="success-message" id="success-message">تم الإضافة بنجاح</div>
+    <div class="error-message" id="error-message">فشل في إضافة الشحنة. تحقق من الكونسول لمزيد من التفاصيل.</div>
+
+    <div class="edit-form" id="edit-form">
+        <h2>تعديل الشحنة</h2>
+        <label for="edit-shipment-number">رقم الشحنة:</label>
+        <input type="text" id="edit-shipment-number" disabled>
+
+        <label for="edit-status">حالة الشحنة:</label>
+        <select id="edit-status">
+            <option value="نم الشراء">نم الشراء</option>
+            <option value="تم الشحن إلى مخازننا في الصين">تم الشحن إلى مخازننا في الصين</option>
+            <option value="تم الشحن إلى مخازننا في الإمارات">تم الشحن إلى مخازننا في الإمارات</option>
+            <option value="تم الشحن إلى العراق">تم الشحن إلى العراق</option>
+            <option value="وصل إلى العراق">وصل إلى العراق</option>
+            <option value="قيد التجهيز والتغليف">قيد التجهيز والتغليف</option>
+            <option value="سيصل الطلب إليك خلال أقل من 24 ساعة انتبه إلى هاتفك">سيصل الطلب إليك خلال أقل من 24 ساعة انتبه إلى هاتفك</option>
+        </select>
+
+        <button id="save-changes">حفظ التعديلات</button>
+        <button id="cancel-edit">إلغاء</button>
+    </div>
+
+    <div class="shipment-list" id="shipment-list">
+        <!-- سيتم إضافة الشحنات هنا -->
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA-UOXh6rNrNEFmbYO2VD4Z3lX-k_087LY",
+        authDomain: "vndrt-e4be6.firebaseapp.com",
+        databaseURL: "https://vndrt-e4be6-default-rtdb.firebaseio.com",
+        projectId: "vndrt-e4be6",
+        storageBucket: "vndrt-e4be6.appspot.com",
+        messagingSenderId: "272358874564",
+        appId: "1:272358874564:web:05061e5303fc02f78cd891",
+        measurementId: "G-K8R33G55XR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const addButton = document.getElementById('add-shipment');
+    const saveChangesButton = document.getElementById('save-changes');
+    const cancelEditButton = document.getElementById('cancel-edit');
+    const shipmentNumberInput = document.getElementById('shipment-number');
+    const statusSelect = document.getElementById('status');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+    const shipmentList = document.getElementById('shipment-list');
+    const editForm = document.getElementById('edit-form');
+    const editShipmentNumberInput = document.getElementById('edit-shipment-number');
+    const editStatusSelect = document.getElementById('edit-status');
+
+    let currentEditingShipment = null;
+
+    addButton.addEventListener('click', () => {
+        const shipmentNumber = shipmentNumberInput.value.trim();
+        const status = statusSelect.value;
+
+        if (shipmentNumber && status) {
+            const shipmentRef = ref(db, 'shipments/' + shipmentNumber);
+            set(shipmentRef, { status })
+                .then(() => {
+                    showMessage('success', 'تم الإضافة بنجاح');
+                    shipmentNumberInput.value = '';
+                    statusSelect.value = 'نم الشراء';
+                    loadShipments();
+                })
+                .catch(error => {
+                    console.error('Error adding shipment:', error);
+                    showMessage('error', 'فشل في إضافة الشحنة. تحقق من الكونسول لمزيد من التفاصيل.');
+                });
+        }
+    });
+
+    saveChangesButton.addEventListener('click', () => {
+        if (currentEditingShipment) {
+            const newStatus = editStatusSelect.value;
+            const shipmentRef = ref(db, 'shipments/' + currentEditingShipment);
+
+            set(shipmentRef, { status: newStatus })
+                .then(() => {
+                    showMessage('success', 'تم حفظ التعديلات بنجاح');
+                    editForm.style.display = 'none';
+                    loadShipments();
+                    currentEditingShipment = null;
+                })
+                .catch(error => {
+                    console.error('Error saving changes:', error);
+                    showMessage('error', 'فشل في حفظ التعديلات. تحقق من الكونسول لمزيد من التفاصيل.');
+                });
+        }
+    });
+
+    cancelEditButton.addEventListener('click', () => {
+        editForm.style.display = 'none';
+        currentEditingShipment = null;
+    });
+
+    window.deleteShipment = function(shipmentNumber) {
+        const shipmentRef = ref(db, 'shipments/' + shipmentNumber);
+        remove(shipmentRef)
+            .then(() => {
+                showMessage('success', 'تم حذف الشحنة بنجاح');
+                loadShipments();
+            })
+            .catch(error => {
+                console.error('Error deleting shipment:', error);
+                showMessage('error', 'فشل في حذف الشحنة. تحقق من الكونسول لمزيد من التفاصيل.');
+            });
+    }
+
+    window.searchShipments = function() {
+        const searchTerm = document.getElementById('search-number').value.trim();
+        const items = shipmentList.getElementsByClassName('shipment-item');
+        
+        for (let item of items) {
+            const number = item.getAttribute('data-number');
+            if (number.includes(searchTerm)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        }
+    }
+
+    function loadShipments() {
+        const shipmentsRef = ref(db, 'shipments/');
+        onValue(shipmentsRef, (snapshot) => {
+            const shipments = snapshot.val();
+            shipmentList.innerHTML = '';
+
+            if (shipments) {
+                Object.keys(shipments).forEach(number => {
+                    const shipment = shipments[number];
+                    const shipmentElement = document.createElement('div');
+                    shipmentElement.className = 'shipment-item';
+                    shipmentElement.setAttribute('data-number', number);
+                    shipmentElement.innerHTML = `
+                        <strong>رقم الشحنة:</strong> ${number} <br>
+                        <strong>حالة الشحنة:</strong> ${shipment.status} <br>
+                        <button onclick="editShipment('${number}')" class="edit-btn">تعديل</button>
+                        <button onclick="deleteShipment('${number}')">حذف</button>
+                    `;
+                    shipmentList.appendChild(shipmentElement);
+                });
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadShipments);
+
+    window.editShipment = function(shipmentNumber) {
+        const shipmentRef = ref(db, 'shipments/' + shipmentNumber);
+        onValue(shipmentRef, (snapshot) => {
+            const shipment = snapshot.val();
+            if (shipment) {
+                editShipmentNumberInput.value = shipmentNumber;
+                editStatusSelect.value = shipment.status;
+                editForm.style.display = 'block';
+                currentEditingShipment = shipmentNumber;
+            }
+        });
+    }
+
+    function showMessage(type, message) {
+        if (type === 'success') {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            setTimeout(() => successMessage.style.display = 'none', 3000);
+        } else if (type === 'error') {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => errorMessage.style.display = 'none', 3000);
+        }
+    }
+</script>
+
+</body>
+</html>
