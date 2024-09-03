@@ -146,11 +146,13 @@
     <label for="shipment-number">رقم الشحنة:</label>
     <input type="text" id="shipment-number" placeholder="أدخل رقم الشحنة">
 
+    <label for="days">مدة الشحن بالأيام:</label>
+    <input type="number" id="days" placeholder="أدخل مدة الشحن بالأيام">
+
     <label for="status">حالة الشحنة:</label>
     <select id="status">
-        <option value="نم الشراء">نم الشراء</option>
+        <option value="تم الشراء">تم الشراء</option>
         <option value="تم الشحن إلى مخازننا في الصين">تم الشحن إلى مخازننا في الصين</option>
-        <option value="تم الشحن إلى مخازننا في الإمارات">تم الشحن إلى مخازننا في الإمارات</option>
         <option value="تم الشحن إلى العراق">تم الشحن إلى العراق</option>
         <option value="وصل إلى العراق">وصل إلى العراق</option>
         <option value="قيد التجهيز والتغليف">قيد التجهيز والتغليف</option>
@@ -167,11 +169,13 @@
         <label for="edit-shipment-number">رقم الشحنة:</label>
         <input type="text" id="edit-shipment-number" disabled>
 
+        <label for="edit-days">مدة الشحن بالأيام:</label>
+        <input type="number" id="edit-days" disabled>
+
         <label for="edit-status">حالة الشحنة:</label>
         <select id="edit-status">
-            <option value="نم الشراء">نم الشراء</option>
+            <option value="تم الشراء">تم الشراء</option>
             <option value="تم الشحن إلى مخازننا في الصين">تم الشحن إلى مخازننا في الصين</option>
-            <option value="تم الشحن إلى مخازننا في الإمارات">تم الشحن إلى مخازننا في الإمارات</option>
             <option value="تم الشحن إلى العراق">تم الشحن إلى العراق</option>
             <option value="وصل إلى العراق">وصل إلى العراق</option>
             <option value="قيد التجهيز والتغليف">قيد التجهيز والتغليف</option>
@@ -209,137 +213,153 @@
     const saveChangesButton = document.getElementById('save-changes');
     const cancelEditButton = document.getElementById('cancel-edit');
     const shipmentNumberInput = document.getElementById('shipment-number');
+    const daysInput = document.getElementById('days');
     const statusSelect = document.getElementById('status');
     const successMessage = document.getElementById('success-message');
     const errorMessage = document.getElementById('error-message');
     const shipmentList = document.getElementById('shipment-list');
     const editForm = document.getElementById('edit-form');
     const editShipmentNumberInput = document.getElementById('edit-shipment-number');
+    const editDaysInput = document.getElementById('edit-days');
     const editStatusSelect = document.getElementById('edit-status');
 
-    let currentEditingShipment = null;
-
-    addButton.addEventListener('click', () => {
+    // Function to add a shipment
+    function addShipment() {
         const shipmentNumber = shipmentNumberInput.value.trim();
+        const days = parseInt(daysInput.value, 10);
         const status = statusSelect.value;
 
-        if (shipmentNumber && status) {
+        if (shipmentNumber && !isNaN(days) && status) {
             const shipmentRef = ref(db, 'shipments/' + shipmentNumber);
-            set(shipmentRef, { status })
-                .then(() => {
-                    showMessage('success', 'تم الإضافة بنجاح');
-                    shipmentNumberInput.value = '';
-                    statusSelect.value = 'نم الشراء';
-                    loadShipments();
-                })
-                .catch(error => {
-                    console.error('Error adding shipment:', error);
-                    showMessage('error', 'فشل في إضافة الشحنة. تحقق من الكونسول لمزيد من التفاصيل.');
-                });
+            set(shipmentRef, {
+                number: shipmentNumber,
+                days: days,
+                status: status,
+                addedDate: new Date().toISOString()
+            })
+            .then(() => {
+                successMessage.style.display = 'block';
+                shipmentNumberInput.value = '';
+                daysInput.value = '';
+                statusSelect.value = 'نم الشراء';
+                updateShipmentList();
+            })
+            .catch(error => {
+                console.error('Error adding shipment:', error);
+                errorMessage.style.display = 'block';
+            });
+        } else {
+            alert('يرجى إدخال جميع المعلومات المطلوبة');
         }
-    });
+    }
 
+    // Function to update the shipment list
+    function updateShipmentList() {
+        const shipmentsRef = ref(db, 'shipments');
+        onValue(shipmentsRef, (snapshot) => {
+            shipmentList.innerHTML = '';
+            snapshot.forEach(childSnapshot => {
+                const shipment = childSnapshot.val();
+                const daysLeft = calculateDaysLeft(new Date(shipment.addedDate), shipment.days);
+                const shipmentDiv = document.createElement('div');
+                shipmentDiv.className = 'shipment-item';
+                shipmentDiv.innerHTML = `
+                    <strong>رقم الشحنة:</strong> ${shipment.number} <br>
+                    <strong>حالة الشحنة:</strong> ${shipment.status} <br>
+                    <strong>الأيام المتبقية:</strong> ${daysLeft > 1 ? daysLeft + ' يوم' : 'سيصل قريبًا جدًا'} <br>
+                    <button class="edit-btn" onclick="editShipment('${shipment.number}')">تعديل</button>
+                    <button onclick="deleteShipment('${shipment.number}')">حذف</button>
+                `;
+                shipmentList.appendChild(shipmentDiv);
+            });
+        });
+    }
+
+    // Function to calculate days left
+    function calculateDaysLeft(addedDate, days) {
+        const today = new Date();
+        const endDate = new Date(addedDate);
+        endDate.setDate(endDate.getDate() + days);
+        const diffTime = endDate - today;
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    // Function to edit a shipment
+    function editShipment(number) {
+        const shipmentRef = ref(db, 'shipments/' + number);
+        onValue(shipmentRef, (snapshot) => {
+            const shipment = snapshot.val();
+            editShipmentNumberInput.value = shipment.number;
+            editDaysInput.value = shipment.days;
+            editStatusSelect.value = shipment.status;
+            editForm.style.display = 'block';
+        });
+    }
+
+    // Function to save changes to a shipment
     saveChangesButton.addEventListener('click', () => {
-        if (currentEditingShipment) {
-            const newStatus = editStatusSelect.value;
-            const shipmentRef = ref(db, 'shipments/' + currentEditingShipment);
+        const number = editShipmentNumberInput.value.trim();
+        const days = parseInt(editDaysInput.value, 10);
+        const status = editStatusSelect.value;
 
-            set(shipmentRef, { status: newStatus })
-                .then(() => {
-                    showMessage('success', 'تم حفظ التعديلات بنجاح');
-                    editForm.style.display = 'none';
-                    loadShipments();
-                    currentEditingShipment = null;
-                })
-                .catch(error => {
-                    console.error('Error saving changes:', error);
-                    showMessage('error', 'فشل في حفظ التعديلات. تحقق من الكونسول لمزيد من التفاصيل.');
-                });
+        if (number && !isNaN(days) && status) {
+            const shipmentRef = ref(db, 'shipments/' + number);
+            set(shipmentRef, {
+                number: number,
+                days: days,
+                status: status,
+                addedDate: new Date().toISOString()
+            })
+            .then(() => {
+                successMessage.style.display = 'block';
+                editForm.style.display = 'none';
+                updateShipmentList();
+            })
+            .catch(error => {
+                console.error('Error updating shipment:', error);
+                errorMessage.style.display = 'block';
+            });
+        } else {
+            alert('يرجى إدخال جميع المعلومات المطلوبة');
         }
     });
 
+    // Function to cancel editing
     cancelEditButton.addEventListener('click', () => {
         editForm.style.display = 'none';
-        currentEditingShipment = null;
     });
 
-    window.deleteShipment = function(shipmentNumber) {
-        const shipmentRef = ref(db, 'shipments/' + shipmentNumber);
-        remove(shipmentRef)
+    // Function to delete a shipment
+    function deleteShipment(number) {
+        if (confirm('هل أنت متأكد أنك تريد حذف هذه الشحنة؟')) {
+            const shipmentRef = ref(db, 'shipments/' + number);
+            remove(shipmentRef)
             .then(() => {
-                showMessage('success', 'تم حذف الشحنة بنجاح');
-                loadShipments();
+                successMessage.style.display = 'block';
+                updateShipmentList();
             })
             .catch(error => {
                 console.error('Error deleting shipment:', error);
-                showMessage('error', 'فشل في حذف الشحنة. تحقق من الكونسول لمزيد من التفاصيل.');
+                errorMessage.style.display = 'block';
             });
-    }
-
-    window.searchShipments = function() {
-        const searchTerm = document.getElementById('search-number').value.trim();
-        const items = shipmentList.getElementsByClassName('shipment-item');
-        
-        for (let item of items) {
-            const number = item.getAttribute('data-number');
-            if (number.includes(searchTerm)) {
-                item.style.display = '';
-            } else {
-                item.style.display = 'none';
-            }
         }
     }
 
-    function loadShipments() {
-        const shipmentsRef = ref(db, 'shipments/');
-        onValue(shipmentsRef, (snapshot) => {
-            const shipments = snapshot.val();
-            shipmentList.innerHTML = '';
-
-            if (shipments) {
-                Object.keys(shipments).forEach(number => {
-                    const shipment = shipments[number];
-                    const shipmentElement = document.createElement('div');
-                    shipmentElement.className = 'shipment-item';
-                    shipmentElement.setAttribute('data-number', number);
-                    shipmentElement.innerHTML = `
-                        <strong>رقم الشحنة:</strong> ${number} <br>
-                        <strong>حالة الشحنة:</strong> ${shipment.status} <br>
-                        <button onclick="editShipment('${number}')" class="edit-btn">تعديل</button>
-                        <button onclick="deleteShipment('${number}')">حذف</button>
-                    `;
-                    shipmentList.appendChild(shipmentElement);
-                });
-            }
+    // Function to search shipments
+    function searchShipments() {
+        const searchNumber = document.getElementById('search-number').value.trim().toLowerCase();
+        const shipmentItems = document.querySelectorAll('.shipment-item');
+        shipmentItems.forEach(item => {
+            const shipmentNumber = item.querySelector('strong').nextSibling.nodeValue.trim().toLowerCase();
+            item.style.display = shipmentNumber.includes(searchNumber) ? 'block' : 'none';
         });
     }
 
-    document.addEventListener('DOMContentLoaded', loadShipments);
+    // Initialize shipment list on page load
+    updateShipmentList();
 
-    window.editShipment = function(shipmentNumber) {
-        const shipmentRef = ref(db, 'shipments/' + shipmentNumber);
-        onValue(shipmentRef, (snapshot) => {
-            const shipment = snapshot.val();
-            if (shipment) {
-                editShipmentNumberInput.value = shipmentNumber;
-                editStatusSelect.value = shipment.status;
-                editForm.style.display = 'block';
-                currentEditingShipment = shipmentNumber;
-            }
-        });
-    }
-
-    function showMessage(type, message) {
-        if (type === 'success') {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
-            setTimeout(() => successMessage.style.display = 'none', 3000);
-        } else if (type === 'error') {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            setTimeout(() => errorMessage.style.display = 'none', 3000);
-        }
-    }
+    // Event listener for adding a shipment
+    addButton.addEventListener('click', addShipment);
 </script>
 
 </body>
