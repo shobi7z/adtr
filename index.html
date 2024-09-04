@@ -3,358 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الشحنات</title>
+    <title>تتبع الطلب</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap">
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #f9f9f9 0%, #e0e0e0 100%);
             color: #333;
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        .container {
-            width: 80%;
-            max-width: 1200px;
-            margin: 0 auto;
             padding: 20px;
         }
-
-        h1 {
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             text-align: center;
-            color: #444;
         }
-
-        .search-container {
-            display: flex;
-            justify-content: center;
+        h1 {
+            color: #007bff;
             margin-bottom: 20px;
+            font-size: 28px;
         }
-
-        .search-container input {
-            width: 70%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            outline: none;
-        }
-
         label {
             display: block;
-            margin: 10px 0 5px;
-            font-size: 16px;
+            margin: 15px 0 5px;
+            font-size: 18px;
+            color: #555;
         }
-
-        input[type="text"], select {
-            width: calc(100% - 22px);
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
             font-size: 16px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
-
         button {
             width: 100%;
-            padding: 10px;
+            padding: 15px;
+            background: #007bff;
+            color: #fff;
             border: none;
-            border-radius: 5px;
-            color: #fff;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 18px;
             cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s ease;
-        }
-
-        button#add-shipment {
-            background-color: #0275d8;
-        }
-
-        button#add-shipment:hover {
-            background-color: #025aa5;
-        }
-
-        button#save-changes {
-            background-color: #5bc0de;
-        }
-
-        button#save-changes:hover {
-            background-color: #31b0d5;
-        }
-
-        button#cancel-edit {
-            background-color: #d9534f;
-        }
-
-        button#cancel-edit:hover {
-            background-color: #c9302c;
-        }
-
-        .success-message, .error-message {
-            display: none;
-            padding: 10px;
-            border-radius: 5px;
-            color: #fff;
-            font-size: 16px;
-            text-align: center;
+            transition: background 0.3s;
             margin-top: 10px;
         }
-
-        .success-message {
-            background-color: #5bc0de;
+        button:hover {
+            background: #0056b3;
         }
-
-        .error-message {
-            background-color: #d9534f;
-        }
-
-        .edit-form {
-            display: none;
-            padding: 20px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        .countdown {
+            font-size: 24px;
+            color: #e63946;
             margin-top: 20px;
         }
-
-        .shipment-item {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .shipment-item button {
-            background-color: #d9534f;
-            color: #fff;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
+        .countdown .time-box {
+            display: inline-block;
+            padding: 10px 20px;
             margin: 5px;
-            transition: background-color 0.3s ease;
+            background: #007bff;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 22px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: background 0.3s;
         }
-
-        .shipment-item button.edit-btn {
-            background-color: #5bc0de;
+        .countdown .time-box:last-child {
+            margin-right: 0;
         }
-
-        .shipment-item button.edit-btn:hover {
-            background-color: #31b0d5;
+        .countdown .time-box:hover {
+            background: #0056b3;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>إدارة الشحنات</h1>
-    
-    <div class="search-container">
-        <input type="text" id="search-number" placeholder="ابحث برقم الشحنة" oninput="searchShipments()">
+    <div class="container">
+        <h1>تتبع الطلب</h1>
+        <label for="trackOrderNumber">رقم الطلب</label>
+        <input type="text" id="trackOrderNumber" placeholder="أدخل رقم الطلب">
+        <button id="trackOrderBtn">تتبع</button>
+        <div id="countdownContainer"></div>
     </div>
 
-    <label for="shipment-number">رقم الشحنة:</label>
-    <input type="text" id="shipment-number" placeholder="أدخل رقم الشحنة">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
 
-    <label for="days">مدة الشحن (أيام):</label>
-    <input type="text" id="days" placeholder="أدخل عدد الأيام">
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEP35xsyNnDFNY4XEjm9ipvTBk44SKQ1Y",
+            authDomain: "qq-9acb9.firebaseapp.com",
+            databaseURL: "https://qq-9acb9-default-rtdb.firebaseio.com",
+            projectId: "qq-9acb9",
+            storageBucket: "qq-9acb9.appspot.com",
+            messagingSenderId: "541616407142",
+            appId: "1:541616407142:web:95d8b7773b371b05e7a3a7",
+            measurementId: "G-C60TKN68DE"
+        };
 
-    <label for="status">حالة الشحنة:</label>
-    <select id="status">
-        <option value="تم الشراء">تم الشراء</option>
-        <option value="تم الشحن إلى الإمارات">تم الشحن إلى الإمارات</option>
-        <option value="تم الاستلام في الإمارات">تم الاستلام في الإمارات</option>
-        <option value="وصل إلى العراق">وصل إلى العراق</option>
-        <option value="قيد التجهيز والتغليف">قيد التجهيز والتغليف</option>
-        <option value="سيصل الطلب إليك خلال أقل من 24 ساعة انتبه إلى هاتفك">سيصل الطلب إليك خلال أقل من 24 ساعة انتبه إلى هاتفك</option>
-    </select>
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
 
-    <button id="add-shipment">إضافة شحنة</button>
-    
-    <div class="success-message" id="success-message">تمت الإضافة بنجاح!</div>
-    <div class="error-message" id="error-message">فشل في الإضافة. تحقق من الكونسول لمزيد من التفاصيل.</div>
+        document.getElementById('trackOrderBtn').addEventListener('click', trackOrder);
 
-    <div class="edit-form" id="edit-form">
-        <h2>تعديل الشحنة</h2>
-        <label for="edit-shipment-number">رقم الشحنة:</label>
-        <input type="text" id="edit-shipment-number" disabled>
-
-        <label for="edit-days">مدة الشحن (أيام):</label>
-        <input type="text" id="edit-days">
-
-        <label for="edit-status">حالة الشحنة:</label>
-        <select id="edit-status">
-            <option value="تم الشراء">تم الشراء</option>
-            <option value="تم الشحن إلى الإمارات">تم الشحن إلى الإمارات</option>
-            <option value="تم الاستلام في الإمارات">تم الاستلام في الإمارات</option>
-            <option value="وصل إلى العراق">وصل إلى العراق</option>
-            <option value="قيد التجهيز والتغليف">قيد التجهيز والتغليف</option>
-            <option value="سيصل الطلب إليك خلال أقل من 24 ساعة انتبه إلى هاتفك">سيصل الطلب إليك خلال أقل من 24 ساعة انتبه إلى هاتفك</option>
-        </select>
-
-        <button id="save-changes">حفظ التعديلات</button>
-        <button id="cancel-edit">إلغاء</button>
-    </div>
-
-    <div class="shipment-list" id="shipment-list">
-        <!-- سيتم إضافة الشحنات هنا -->
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyA-UOXh6rNrNEFmbYO2VD4Z3lX-k_087LY",
-        authDomain: "vndrt-e4be6.firebaseapp.com",
-        databaseURL: "https://vndrt-e4be6-default-rtdb.firebaseio.com",
-        projectId: "vndrt-e4be6",
-        storageBucket: "vndrt-e4be6.appspot.com",
-        messagingSenderId: "272358874564",
-        appId: "1:272358874564:web:05061e5303fc02f78cd891",
-        measurementId: "G-K8R33G55XR"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const addButton = document.getElementById('add-shipment');
-    const saveChangesButton = document.getElementById('save-changes');
-    const cancelEditButton = document.getElementById('cancel-edit');
-    const shipmentNumberInput = document.getElementById('shipment-number');
-    const daysInput = document.getElementById('days');
-    const statusSelect = document.getElementById('status');
-    const successMessage = document.getElementById('success-message');
-    const errorMessage = document.getElementById('error-message');
-    const editForm = document.getElementById('edit-form');
-    const editShipmentNumberInput = document.getElementById('edit-shipment-number');
-    const editDaysInput = document.getElementById('edit-days');
-    const editStatusSelect = document.getElementById('edit-status');
-    const shipmentList = document.getElementById('shipment-list');
-
-    let currentEditingShipment = null;
-
-    addButton.addEventListener('click', () => {
-        const number = shipmentNumberInput.value.trim();
-        const days = parseInt(daysInput.value, 10);
-        const status = statusSelect.value;
-
-        if (number && days && status) {
-            const shipmentsRef = ref(db, 'shipments/' + number);
-            set(shipmentsRef, {
-                number: number,
-                days: days,
-                status: status
-            })
-            .then(() => {
-                successMessage.style.display = 'block';
-                errorMessage.style.display = 'none';
-                shipmentNumberInput.value = '';
-                daysInput.value = '';
-                statusSelect.value = 'تم الشراء';
-                loadShipments();
-            })
-            .catch((error) => {
-                successMessage.style.display = 'none';
-                errorMessage.style.display = 'block';
-                console.error("Error adding shipment: ", error);
-            });
-        }
-    });
-
-    saveChangesButton.addEventListener('click', () => {
-        if (currentEditingShipment) {
-            const editedNumber = editShipmentNumberInput.value.trim();
-            const editedDays = parseInt(editDaysInput.value, 10);
-            const editedStatus = editStatusSelect.value;
-
-            if (editedNumber && editedDays && editedStatus) {
-                const shipmentRef = ref(db, 'shipments/' + currentEditingShipment);
-                set(shipmentRef, {
-                    number: editedNumber,
-                    days: editedDays,
-                    status: editedStatus
-                })
-                .then(() => {
-                    successMessage.style.display = 'block';
-                    errorMessage.style.display = 'none';
-                    editForm.style.display = 'none';
-                    loadShipments();
-                })
-                .catch((error) => {
-                    successMessage.style.display = 'none';
-                    errorMessage.style.display = 'block';
-                    console.error("Error updating shipment: ", error);
+        function trackOrder() {
+            const orderNumber = document.getElementById('trackOrderNumber').value.trim();
+            if (orderNumber) {
+                const orderRef = ref(database, 'orders/' + orderNumber);
+                onValue(orderRef, (snapshot) => {
+                    const orderData = snapshot.val();
+                    if (orderData) {
+                        document.getElementById('countdownContainer').innerHTML = `
+                            <h2>العد التنازلي للطلب رقم: ${orderData.orderNumber}</h2>
+                            <div class="countdown" id="countdown-${orderData.orderNumber}">
+                                <div class="time-box" id="days-${orderData.orderNumber}"></div>
+                                <div class="time-box" id="hours-${orderData.orderNumber}"></div>
+                                <div class="time-box" id="minutes-${orderData.orderNumber}"></div>
+                                <div class="time-box" id="seconds-${orderData.orderNumber}"></div>
+                            </div>
+                        `;
+                        startCountdown(orderData.expiresAt, orderData.orderNumber);
+                    } else {
+                        document.getElementById('countdownContainer').innerHTML = `<p>رقم الطلب غير موجود</p>`;
+                    }
                 });
+            } else {
+                alert('يرجى إدخال رقم الطلب');
             }
         }
-    });
 
-    cancelEditButton.addEventListener('click', () => {
-        editForm.style.display = 'none';
-    });
+        function startCountdown(expirationDate, orderNumber) {
+            const daysElement = document.getElementById(`days-${orderNumber}`);
+            const hoursElement = document.getElementById(`hours-${orderNumber}`);
+            const minutesElement = document.getElementById(`minutes-${orderNumber}`);
+            const secondsElement = document.getElementById(`seconds-${orderNumber}`);
 
-    function loadShipments() {
-        const shipmentsRef = ref(db, 'shipments/');
-        onValue(shipmentsRef, (snapshot) => {
-            shipmentList.innerHTML = '';
-            snapshot.forEach((childSnapshot) => {
-                const shipment = childSnapshot.val();
-                const shipmentDiv = document.createElement('div');
-                shipmentDiv.classList.add('shipment-item');
-                shipmentDiv.innerHTML = `
-                    <p>رقم الشحنة: ${shipment.number}</p>
-                    <p>مدة الشحن: ${shipment.days} أيام</p>
-                    <p>حالة الشحنة: ${shipment.status}</p>
-                    <button class="edit-btn" onclick="editShipment('${shipment.number}')">تعديل</button>
-                    <button onclick="deleteShipment('${shipment.number}')">حذف</button>
-                `;
-                shipmentList.appendChild(shipmentDiv);
-            });
-        });
-    }
+            function updateCountdown() {
+                const now = new Date();
+                const expiration = new Date(expirationDate);
+                const totalSeconds = Math.max((expiration - now) / 1000, 0);
 
-    function editShipment(number) {
-        currentEditingShipment = number;
-        const shipmentRef = ref(db, 'shipments/' + number);
-        onValue(shipmentRef, (snapshot) => {
-            const shipment = snapshot.val();
-            if (shipment) {
-                editShipmentNumberInput.value = shipment.number;
-                editDaysInput.value = shipment.days;
-                editStatusSelect.value = shipment.status;
-                editForm.style.display = 'block';
+                const days = Math.floor(totalSeconds / (3600 * 24));
+                const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = Math.floor(totalSeconds % 60);
+
+                daysElement.textContent = `${days} أيام`;
+                hoursElement.textContent = `${hours} ساعات`;
+                minutesElement.textContent = `${minutes} دقائق`;
+                secondsElement.textContent = `${seconds} ثواني`;
+
+                if (totalSeconds <= 0) {
+                    daysElement.textContent = 'انتهت المدة';
+                    hoursElement.textContent = '';
+                    minutesElement.textContent = '';
+                    secondsElement.textContent = '';
+                }
             }
-        });
-    }
-
-    function deleteShipment(number) {
-        const shipmentRef = ref(db, 'shipments/' + number);
-        remove(shipmentRef)
-            .then(() => {
-                successMessage.style.display = 'block';
-                errorMessage.style.display = 'none';
-                loadShipments();
-            })
-            .catch((error) => {
-                successMessage.style.display = 'none';
-                errorMessage.style.display = 'block';
-                console.error("Error deleting shipment: ", error);
-            });
-    }
-
-    // Expose functions globally
-    window.editShipment = editShipment;
-    window.deleteShipment = deleteShipment;
-
-    document.addEventListener('DOMContentLoaded', loadShipments);
-</script>
-
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+    </script>
 </body>
 </html>
