@@ -3,97 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تتبع الطلب</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap">
+    <title>إضافة رقم طلب</title>
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            background: linear-gradient(135deg, #f9f9f9 0%, #e0e0e0 100%);
+            background-color: #f9f9f9;
             color: #333;
-            margin: 0;
             padding: 20px;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #007bff;
-            margin-bottom: 20px;
-            font-size: 28px;
+            text-align: center;
         }
         label {
             display: block;
-            margin: 15px 0 5px;
-            font-size: 18px;
-            color: #555;
+            margin: 10px 0 5px;
         }
         input[type="text"] {
-            width: calc(100% - 20px);
-            padding: 15px;
+            width: 100%;
+            padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 4px;
         }
         button {
+            display: block;
             width: 100%;
-            padding: 15px;
-            background: #007bff;
+            padding: 10px;
+            background-color: #007bff;
             color: #fff;
             border: none;
-            border-radius: 8px;
-            font-size: 18px;
+            border-radius: 4px;
+            font-size: 16px;
             cursor: pointer;
-            transition: background 0.3s;
             margin-top: 10px;
         }
         button:hover {
-            background: #0056b3;
+            background-color: #0056b3;
         }
         .countdown {
             font-size: 24px;
-            color: #e63946;
+            color: red;
+            text-align: center;
             margin-top: 20px;
         }
         .countdown .time-box {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 10px;
             margin: 5px;
-            background: #007bff;
-            color: #fff;
-            border-radius: 8px;
-            font-size: 22px;
+            background-color: #fff;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            font-size: 20px;
             text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transition: background 0.3s;
         }
-        .countdown .time-box:last-child {
-            margin-right: 0;
+        .order-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
         }
-        .countdown .time-box:hover {
-            background: #0056b3;
+        .order-item button.delete-btn {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .order-item button.delete-btn:hover {
+            background-color: #c82333;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>تتبع الطلب</h1>
-        <label for="trackOrderNumber">رقم الطلب</label>
-        <input type="text" id="trackOrderNumber" placeholder="أدخل رقم الطلب">
-        <button id="trackOrderBtn">تتبع</button>
-        <div id="countdownContainer"></div>
+        <h1>إضافة رقم طلب جديد</h1>
+        <label for="orderNumber">رقم الطلب</label>
+        <input type="text" id="orderNumber" placeholder="أدخل رقم الطلب">
+        <button id="addOrderBtn">إضافة طلب</button>
+        <div id="ordersList"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
 
         const firebaseConfig = {
@@ -112,32 +114,53 @@
         const analytics = getAnalytics(app);
         const database = getDatabase(app);
 
-        document.getElementById('trackOrderBtn').addEventListener('click', trackOrder);
+        document.getElementById('addOrderBtn').addEventListener('click', addOrder);
 
-        function trackOrder() {
-            const orderNumber = document.getElementById('trackOrderNumber').value.trim();
+        function addOrder() {
+            const orderNumber = document.getElementById('orderNumber').value.trim();
             if (orderNumber) {
                 const orderRef = ref(database, 'orders/' + orderNumber);
-                onValue(orderRef, (snapshot) => {
-                    const orderData = snapshot.val();
-                    if (orderData) {
-                        document.getElementById('countdownContainer').innerHTML = `
-                            <h2>العد التنازلي للطلب رقم: ${orderData.orderNumber}</h2>
-                            <div class="countdown" id="countdown-${orderData.orderNumber}">
-                                <div class="time-box" id="days-${orderData.orderNumber}"></div>
-                                <div class="time-box" id="hours-${orderData.orderNumber}"></div>
-                                <div class="time-box" id="minutes-${orderData.orderNumber}"></div>
-                                <div class="time-box" id="seconds-${orderData.orderNumber}"></div>
-                            </div>
-                        `;
-                        startCountdown(orderData.expiresAt, orderData.orderNumber);
-                    } else {
-                        document.getElementById('countdownContainer').innerHTML = `<p>رقم الطلب غير موجود</p>`;
-                    }
+                const now = new Date();
+                const expirationDate = new Date(now.getTime() + 20*24*60*60*1000); // 20 days from now
+                set(orderRef, {
+                    orderNumber: orderNumber,
+                    createdAt: now.toISOString(),
+                    expiresAt: expirationDate.toISOString()
+                }).then(() => {
+                    alert('تم إضافة الطلب بنجاح');
+                    document.getElementById('orderNumber').value = '';
+                    loadOrders();
+                }).catch((error) => {
+                    console.error('Error adding order:', error);
                 });
             } else {
                 alert('يرجى إدخال رقم الطلب');
             }
+        }
+
+        function loadOrders() {
+            const ordersRef = ref(database, 'orders');
+            onValue(ordersRef, (snapshot) => {
+                const ordersList = document.getElementById('ordersList');
+                ordersList.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const orderData = childSnapshot.val();
+                    const orderDiv = document.createElement('div');
+                    orderDiv.classList.add('order-item');
+                    orderDiv.innerHTML = `
+                        <div>رقم الطلب: ${orderData.orderNumber}</div>
+                        <div class="countdown" id="countdown-${orderData.orderNumber}">
+                            <div class="time-box" id="days-${orderData.orderNumber}"></div>
+                            <div class="time-box" id="hours-${orderData.orderNumber}"></div>
+                            <div class="time-box" id="minutes-${orderData.orderNumber}"></div>
+                            <div class="time-box" id="seconds-${orderData.orderNumber}"></div>
+                        </div>
+                        <button class="delete-btn" onclick="removeOrder('${orderData.orderNumber}')">حذف</button>
+                    `;
+                    ordersList.appendChild(orderDiv);
+                    startCountdown(orderData.expiresAt, orderData.orderNumber);
+                });
+            });
         }
 
         function startCountdown(expirationDate, orderNumber) {
@@ -166,11 +189,25 @@
                     hoursElement.textContent = '';
                     minutesElement.textContent = '';
                     secondsElement.textContent = '';
+                    removeOrder(orderNumber);
                 }
             }
             updateCountdown();
             setInterval(updateCountdown, 1000);
         }
+
+        window.removeOrder = function(orderNumber) {
+            const orderRef = ref(database, 'orders/' + orderNumber);
+            remove(orderRef).then(() => {
+                console.log(`Order ${orderNumber} removed successfully.`);
+                loadOrders(); // Reload orders to update the list
+            }).catch((error) => {
+                console.error('Error removing order:', error);
+            });
+        }
+
+        // Load orders on page load
+        loadOrders();
     </script>
 </body>
 </html>
