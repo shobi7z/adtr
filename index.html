@@ -26,7 +26,7 @@
             display: block;
             margin: 10px 0 5px;
         }
-        input[type="text"] {
+        input[type="text"], input[type="number"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -89,6 +89,10 @@
         <h1>إضافة رقم طلب جديد</h1>
         <label for="orderNumber">رقم الطلب</label>
         <input type="text" id="orderNumber" placeholder="أدخل رقم الطلب">
+        
+        <label for="daysRemaining">عدد الأيام المتبقية</label>
+        <input type="number" id="daysRemaining" placeholder="أدخل عدد الأيام المتبقية">
+        
         <button id="addOrderBtn">إضافة طلب</button>
         <div id="ordersList"></div>
     </div>
@@ -118,23 +122,28 @@
 
         function addOrder() {
             const orderNumber = document.getElementById('orderNumber').value.trim();
-            if (orderNumber) {
+            const daysRemaining = document.getElementById('daysRemaining').value.trim();
+            
+            if (orderNumber && daysRemaining && daysRemaining > 0) {
                 const orderRef = ref(database, 'orders/' + orderNumber);
                 const now = new Date();
-                const expirationDate = new Date(now.getTime() + 20*24*60*60*1000); // 20 days from now
+                const expirationDate = new Date(now.getTime() + daysRemaining * 24 * 60 * 60 * 1000); // days entered by user
+                
                 set(orderRef, {
                     orderNumber: orderNumber,
                     createdAt: now.toISOString(),
-                    expiresAt: expirationDate.toISOString()
+                    expiresAt: expirationDate.toISOString(),
+                    daysRemaining: daysRemaining
                 }).then(() => {
                     alert('تم إضافة الطلب بنجاح');
                     document.getElementById('orderNumber').value = '';
+                    document.getElementById('daysRemaining').value = '';
                     loadOrders();
                 }).catch((error) => {
                     console.error('Error adding order:', error);
                 });
             } else {
-                alert('يرجى إدخال رقم الطلب');
+                alert('يرجى إدخال رقم الطلب وعدد الأيام المتبقية');
             }
         }
 
@@ -149,6 +158,7 @@
                     orderDiv.classList.add('order-item');
                     orderDiv.innerHTML = `
                         <div>رقم الطلب: ${orderData.orderNumber}</div>
+                        <div>عدد الأيام المتبقية: <span id="remaining-days-${orderData.orderNumber}"></span> أيام</div>
                         <div class="countdown" id="countdown-${orderData.orderNumber}">
                             <div class="time-box" id="days-${orderData.orderNumber}"></div>
                             <div class="time-box" id="hours-${orderData.orderNumber}"></div>
@@ -168,6 +178,7 @@
             const hoursElement = document.getElementById(`hours-${orderNumber}`);
             const minutesElement = document.getElementById(`minutes-${orderNumber}`);
             const secondsElement = document.getElementById(`seconds-${orderNumber}`);
+            const remainingDaysElement = document.getElementById(`remaining-days-${orderNumber}`);
 
             function updateCountdown() {
                 const now = new Date();
@@ -183,6 +194,8 @@
                 hoursElement.textContent = `${hours} ساعات`;
                 minutesElement.textContent = `${minutes} دقائق`;
                 secondsElement.textContent = `${seconds} ثواني`;
+
+                remainingDaysElement.textContent = days; // عرض عدد الأيام المتبقية
 
                 if (totalSeconds <= 0) {
                     daysElement.textContent = 'انتهت المدة';
