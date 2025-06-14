@@ -1,107 +1,279 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إضافة رقم طلب</title>
+    <title>لوحة التحكم - إدارة الطلبات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --success: #28a745;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
         body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
+            background-color: #f5f7fa;
             padding: 20px;
         }
+        
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+        
         h1 {
+            color: var(--primary);
             text-align: center;
+            margin-bottom: 20px;
         }
+        
+        .panel {
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
         label {
             display: block;
-            margin: 10px 0 5px;
+            margin-bottom: 5px;
+            font-weight: 500;
         }
-        input[type="text"], input[type="number"] {
+        
+        input, select {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             font-size: 16px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px;
+            font-size: 16px;
+            transition: background 0.3s;
         }
-        button:hover {
-            background-color: #0056b3;
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
         }
-        .countdown {
-            font-size: 24px;
-            color: red;
-            text-align: center;
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
-        .countdown .time-box {
-            display: inline-block;
-            padding: 10px;
-            margin: 5px;
-            background-color: #fff;
-            border: 2px solid #007bff;
-            border-radius: 5px;
-            font-size: 20px;
-            text-align: center;
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
         }
-        .order-item {
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #fff;
+        
+        th {
+            background-color: var(--primary);
+            color: white;
         }
-        .order-item button.delete-btn {
-            background-color: #dc3545;
-            color: #fff;
-            border: none;
+        
+        .status-badge {
             padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
+            border-radius: 20px;
             font-size: 14px;
+            background-color: #e9ecef;
         }
-        .order-item button.delete-btn:hover {
-            background-color: #c82333;
+        
+        .action-btn {
+            padding: 5px 10px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .edit-btn {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .delete-btn {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* ستايلات المودال */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-title {
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .modal-footer {
+            margin-top: 15px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>إضافة رقم طلب جديد</h1>
-        <label for="orderNumber">رقم الطلب</label>
-        <input type="text" id="orderNumber" placeholder="أدخل رقم الطلب">
+        <h1><i class="fas fa-cog"></i> إدارة الطلبات</h1>
         
-        <label for="daysRemaining">عدد الأيام المتبقية</label>
-        <input type="number" id="daysRemaining" placeholder="أدخل عدد الأيام المتبقية">
+        <div class="alert alert-success" id="successAlert"></div>
+        <div class="alert alert-error" id="errorAlert"></div>
         
-        <button id="addOrderBtn">إضافة طلب</button>
-        <div id="ordersList"></div>
+        <div class="panel">
+            <h2><i class="fas fa-plus-circle"></i> إضافة طلب جديد</h2>
+            <form id="addOrderForm">
+                <div class="form-group">
+                    <label for="orderNumber">رقم الطلب</label>
+                    <input type="text" id="orderNumber" required>
+                </div>
+                <div class="form-group">
+                    <label for="orderStatus">حالة الطلب</label>
+                    <select id="orderStatus" required>
+                        <option value="تم الشراء">تم الشراء</option>
+                        <option value="تم الشحن للإمارات">تم الشحن للإمارات</option>
+                        <option value="تم الاستلام في الإمارات">تم الاستلام في الإمارات</option>
+                        <option value="تم الشحن للعراق">تم الشحن للعراق</option>
+                        <option value="جاري التجهيز">جاري التجهيز (سوف يصل طلبك خلال 24 ساعة)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fas fa-save"></i> حفظ</button>
+            </form>
+        </div>
+        
+        <div class="panel">
+            <h2><i class="fas fa-list"></i> قائمة الطلبات</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>حالة الطلب</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTable">
+                    <!-- الطلبات ستظهر هنا -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
+    <!-- مودال التعديل -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">تعديل حالة الطلب</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editOrderId">
+                <div class="form-group">
+                    <label for="editOrderStatus">حالة الطلب</label>
+                    <select id="editOrderStatus" class="form-control" required>
+                        <option value="تم الشراء">تم الشراء</option>
+                        <option value="تم الشحن للإمارات">تم الشحن للإمارات</option>
+                        <option value="تم الاستلام في الإمارات">تم الاستلام في الإمارات</option>
+                        <option value="تم الشحن للعراق">تم الشحن للعراق</option>
+                        <option value="جاري التجهيز">جاري التجهيز (سوف يصل طلبك خلال 24 ساعة)</option>
 
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn-primary"><i class="fas fa-save"></i> حفظ التغييرات</button>
+                    <button type="button" class="btn-danger" id="cancelEdit">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <script>
+        // تهيئة Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDEP35xsyNnDFNY4XEjm9ipvTBk44SKQ1Y",
             authDomain: "qq-9acb9.firebaseapp.com",
@@ -109,118 +281,209 @@
             projectId: "qq-9acb9",
             storageBucket: "qq-9acb9.appspot.com",
             messagingSenderId: "541616407142",
-            appId: "1:541616407142:web:95d8b7773b371b05e7a3a7",
-            measurementId: "G-C60TKN68DE"
+            appId: "1:541616407142:web:95d8b7773b371b05e7a3a7"
         };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const database = getDatabase(app);
-
-        document.getElementById('addOrderBtn').addEventListener('click', addOrder);
-
-        function addOrder() {
-            const orderNumber = document.getElementById('orderNumber').value.trim();
-            const daysRemaining = document.getElementById('daysRemaining').value.trim();
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            const addOrderForm = document.getElementById('addOrderForm');
+            const ordersTable = document.getElementById('ordersTable');
+            const successAlert = document.getElementById('successAlert');
+            const errorAlert = document.getElementById('errorAlert');
+            const editModal = document.getElementById('editModal');
+            const editForm = document.getElementById('editForm');
+            const closeModal = document.getElementById('closeModal');
+            const cancelEdit = document.getElementById('cancelEdit');
+            const editOrderStatus = document.getElementById('editOrderStatus');
             
-            if (orderNumber && daysRemaining && daysRemaining > 0) {
-                const orderRef = ref(database, 'orders/' + orderNumber);
-                const now = new Date();
-                const expirationDate = new Date(now.getTime() + daysRemaining * 24 * 60 * 60 * 1000); // days entered by user
+            // تحميل الطلبات عند فتح الصفحة
+            loadOrders();
+            
+            // إضافة طلب جديد
+            addOrderForm.addEventListener('submit', function(e) {
+                e.preventDefault();
                 
-                set(orderRef, {
-                    orderNumber: orderNumber,
-                    createdAt: now.toISOString(),
-                    expiresAt: expirationDate.toISOString(),
-                    daysRemaining: daysRemaining
-                }).then(() => {
-                    alert('تم إضافة الطلب بنجاح');
-                    document.getElementById('orderNumber').value = '';
-                    document.getElementById('daysRemaining').value = '';
-                    loadOrders();
-                }).catch((error) => {
-                    console.error('Error adding order:', error);
-                });
-            } else {
-                alert('يرجى إدخال رقم الطلب وعدد الأيام المتبقية');
+                const orderNumber = document.getElementById('orderNumber').value.trim();
+                const orderStatus = document.getElementById('orderStatus').value;
+                
+                if (!orderNumber) {
+                    showError('الرجاء إدخال رقم الطلب');
+                    return;
+                }
+                
+                // التحقق من وجود الطلب مسبقاً
+                database.ref('orders/' + orderNumber).once('value')
+                    .then((snapshot) => {
+                        if (snapshot.exists()) {
+                            showError('رقم الطلب موجود مسبقاً');
+                        } else {
+                            // إضافة الطلب الجديد
+                            database.ref('orders/' + orderNumber).set({
+                                status: orderStatus,
+                                timestamp: firebase.database.ServerValue.TIMESTAMP
+                            })
+                            .then(() => {
+                                showSuccess('تم إضافة الطلب بنجاح');
+                                addOrderForm.reset();
+                                loadOrders();
+                            })
+                            .catch((error) => {
+                                showError('حدث خطأ أثناء إضافة الطلب');
+                                console.error(error);
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        showError('حدث خطأ أثناء التحقق من رقم الطلب');
+                        console.error(error);
+                    });
+            });
+            
+            // تحميل جميع الطلبات
+            function loadOrders() {
+                database.ref('orders').once('value')
+                    .then((snapshot) => {
+                        ordersTable.innerHTML = '';
+                        
+                        if (snapshot.exists()) {
+                            const orders = snapshot.val();
+                            
+                            // تحويل الكائن إلى مصفوفة وترتيبها حسب التاريخ
+                            const ordersArray = Object.entries(orders).map(([key, value]) => {
+                                return {
+                                    id: key,
+                                    ...value
+                                };
+                            });
+                            
+                            // ترتيب الطلبات من الأحدث إلى الأقدم
+                            ordersArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                            
+                            // عرض الطلبات في الجدول
+                            ordersArray.forEach(order => {
+                                const row = document.createElement('tr');
+                                
+                                // رقم الطلب
+                                const orderNumberCell = document.createElement('td');
+                                orderNumberCell.textContent = order.id;
+                                row.appendChild(orderNumberCell);
+                                
+                                // حالة الطلب
+                                const statusCell = document.createElement('td');
+                                const statusBadge = document.createElement('span');
+                                statusBadge.className = 'status-badge';
+                                statusBadge.textContent = order.status;
+                                statusCell.appendChild(statusBadge);
+                                row.appendChild(statusCell);
+                                
+                                // أزرار الإجراءات
+                                const actionsCell = document.createElement('td');
+                                
+                                // زر التعديل
+                                const editBtn = document.createElement('button');
+                                editBtn.className = 'action-btn edit-btn';
+                                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                                editBtn.addEventListener('click', () => openEditModal(order.id, order.status));
+                                actionsCell.appendChild(editBtn);
+                                
+                                // زر الحذف
+                                const deleteBtn = document.createElement('button');
+                                deleteBtn.className = 'action-btn delete-btn';
+                                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                                deleteBtn.addEventListener('click', () => deleteOrder(order.id));
+                                actionsCell.appendChild(deleteBtn);
+                                
+                                row.appendChild(actionsCell);
+                                ordersTable.appendChild(row);
+                            });
+                        } else {
+                            ordersTable.innerHTML = '<tr><td colspan="3" style="text-align:center;">لا توجد طلبات</td></tr>';
+                        }
+                    })
+                    .catch((error) => {
+                        showError('حدث خطأ أثناء جلب الطلبات');
+                        console.error(error);
+                    });
             }
-        }
-
-        function loadOrders() {
-            const ordersRef = ref(database, 'orders');
-            onValue(ordersRef, (snapshot) => {
-                const ordersList = document.getElementById('ordersList');
-                ordersList.innerHTML = '';
-                snapshot.forEach((childSnapshot) => {
-                    const orderData = childSnapshot.val();
-                    const orderDiv = document.createElement('div');
-                    orderDiv.classList.add('order-item');
-                    orderDiv.innerHTML = `
-                        <div>رقم الطلب: ${orderData.orderNumber}</div>
-                        <div>عدد الأيام المتبقية: <span id="remaining-days-${orderData.orderNumber}"></span> أيام</div>
-                        <div class="countdown" id="countdown-${orderData.orderNumber}">
-                            <div class="time-box" id="days-${orderData.orderNumber}"></div>
-                            <div class="time-box" id="hours-${orderData.orderNumber}"></div>
-                            <div class="time-box" id="minutes-${orderData.orderNumber}"></div>
-                            <div class="time-box" id="seconds-${orderData.orderNumber}"></div>
-                        </div>
-                        <button class="delete-btn" onclick="removeOrder('${orderData.orderNumber}')">حذف</button>
-                    `;
-                    ordersList.appendChild(orderDiv);
-                    startCountdown(orderData.expiresAt, orderData.orderNumber);
+            
+            // فتح مودال التعديل
+            function openEditModal(orderNumber, currentStatus) {
+                document.getElementById('editOrderId').value = orderNumber;
+                document.getElementById('editOrderStatus').value = currentStatus;
+                editModal.style.display = 'flex';
+            }
+            
+            // إغلاق مودال التعديل
+            closeModal.addEventListener('click', () => {
+                editModal.style.display = 'none';
+            });
+            
+            cancelEdit.addEventListener('click', () => {
+                editModal.style.display = 'none';
+            });
+            
+            // حفظ التعديلات
+            editForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const orderNumber = document.getElementById('editOrderId').value;
+                const newStatus = document.getElementById('editOrderStatus').value;
+                
+                database.ref('orders/' + orderNumber).update({
+                    status: newStatus,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                })
+                .then(() => {
+                    showSuccess('تم تحديث حالة الطلب بنجاح');
+                    editModal.style.display = 'none';
+                    loadOrders();
+                })
+                .catch((error) => {
+                    showError('حدث خطأ أثناء تحديث حالة الطلب');
+                    console.error(error);
                 });
             });
-        }
-
-        function startCountdown(expirationDate, orderNumber) {
-            const daysElement = document.getElementById(`days-${orderNumber}`);
-            const hoursElement = document.getElementById(`hours-${orderNumber}`);
-            const minutesElement = document.getElementById(`minutes-${orderNumber}`);
-            const secondsElement = document.getElementById(`seconds-${orderNumber}`);
-            const remainingDaysElement = document.getElementById(`remaining-days-${orderNumber}`);
-
-            function updateCountdown() {
-                const now = new Date();
-                const expiration = new Date(expirationDate);
-                const totalSeconds = Math.max((expiration - now) / 1000, 0);
-
-                const days = Math.floor(totalSeconds / (3600 * 24));
-                const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = Math.floor(totalSeconds % 60);
-
-                daysElement.textContent = `${days} أيام`;
-                hoursElement.textContent = `${hours} ساعات`;
-                minutesElement.textContent = `${minutes} دقائق`;
-                secondsElement.textContent = `${seconds} ثواني`;
-
-                remainingDaysElement.textContent = days; // عرض عدد الأيام المتبقية
-
-                if (totalSeconds <= 0) {
-                    daysElement.textContent = 'انتهت المدة';
-                    hoursElement.textContent = '';
-                    minutesElement.textContent = '';
-                    secondsElement.textContent = '';
-                    removeOrder(orderNumber);
+            
+            // حذف الطلب
+            function deleteOrder(orderNumber) {
+                if (confirm('هل أنت متأكد من حذف هذا الطلب؟')) {
+                    database.ref('orders/' + orderNumber).remove()
+                        .then(() => {
+                            showSuccess('تم حذف الطلب بنجاح');
+                            loadOrders();
+                        })
+                        .catch((error) => {
+                            showError('حدث خطأ أثناء حذف الطلب');
+                            console.error(error);
+                        });
                 }
             }
-            updateCountdown();
-            setInterval(updateCountdown, 1000);
-        }
-
-        window.removeOrder = function(orderNumber) {
-            const orderRef = ref(database, 'orders/' + orderNumber);
-            remove(orderRef).then(() => {
-                console.log(`Order ${orderNumber} removed successfully.`);
-                loadOrders(); // Reload orders to update the list
-            }).catch((error) => {
-                console.error('Error removing order:', error);
-            });
-        }
-
-        // Load orders on page load
-        loadOrders();
+            
+            // عرض رسالة نجاح
+            function showSuccess(message) {
+                successAlert.textContent = message;
+                successAlert.style.display = 'block';
+                errorAlert.style.display = 'none';
+                
+                setTimeout(() => {
+                    successAlert.style.display = 'none';
+                }, 3000);
+            }
+            
+            // عرض رسالة خطأ
+            function showError(message) {
+                errorAlert.textContent = message;
+                errorAlert.style.display = 'block';
+                successAlert.style.display = 'none';
+                
+                setTimeout(() => {
+                    errorAlert.style.display = 'none';
+                }, 3000);
+            }
+        });
     </script>
 </body>
 </html>
