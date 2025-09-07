@@ -3,277 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - إدارة الطلبات</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>لوحة إدارة تتبع الطلبات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     <style>
-        :root {
-            --primary: #4a6fa5;
-            --secondary: #166088;
-            --success: #28a745;
-            --danger: #dc3545;
-            --light: #f8f9fa;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Tajawal', sans-serif;
-        }
-        
-        body {
-            background-color: #f5f7fa;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        h1 {
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .panel {
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--secondary);
-        }
-        
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        
-        th, td {
-            padding: 12px 15px;
-            text-align: right;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        th {
-            background-color: var(--primary);
-            color: white;
-        }
-        
         .status-badge {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            background-color: #e9ecef;
+            transition: all 0.3s ease;
         }
-        
-        .action-btn {
-            padding: 5px 10px;
-            margin-right: 5px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
         }
-        
-        .edit-btn {
-            background-color: #ffc107;
-            color: #000;
-        }
-        
-        .delete-btn {
-            background-color: var(--danger);
-            color: white;
-        }
-        
-        .alert {
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            display: none;
-        }
-        
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        
-        /* ستايلات المودال */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            width: 400px;
-            max-width: 90%;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .modal-title {
-            font-weight: 500;
-            color: var(--primary);
-        }
-        
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        
-        .modal-footer {
-            margin-top: 15px;
-            text-align: left;
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1><i class="fas fa-cog"></i> إدارة الطلبات</h1>
-        
-        <div class="alert alert-success" id="successAlert"></div>
-        <div class="alert alert-error" id="errorAlert"></div>
-        
-        <div class="panel">
-            <h2><i class="fas fa-plus-circle"></i> إضافة طلب جديد</h2>
-            <form id="addOrderForm">
-                <div class="form-group">
-                    <label for="orderNumber">رقم الطلب</label>
-                    <input type="text" id="orderNumber" required>
-                </div>
-                <div class="form-group">
-                    <label for="orderStatus">حالة الطلب</label>
-                    <select id="orderStatus" required>
-                        <option value="تم الشراء">تم الشراء</option>
-                        <option value="تم الشحن للإمارات">تم الشحن للإمارات</option>
-                        <option value="تم الاستلام في الإمارات">تم الاستلام في الإمارات</option>
-                        <option value="تم الشحن للعراق">تم الشحن للعراق</option>
-                        <option value="جاري التجهيز">جاري التجهيز (سوف يصل طلبك خلال 24 ساعة)</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn-primary"><i class="fas fa-save"></i> حفظ</button>
-            </form>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🚚 لوحة إدارة تتبع الطلبات</h1>
+            <p class="text-gray-600">إدارة وتتبع حالة الطلبات بسهولة</p>
         </div>
-        
-        <div class="panel">
-            <h2><i class="fas fa-list"></i> قائمة الطلبات</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>رقم الطلب</th>
-                        <th>حالة الطلب</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersTable">
-                    <!-- الطلبات ستظهر هنا -->
-                </tbody>
-            </table>
-        </div>
-    </div>
 
-    <!-- مودال التعديل -->
-    <div class="modal" id="editModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">تعديل حالة الطلب</h3>
-                <button class="close-btn" id="closeModal">&times;</button>
+        <!-- Add New Order Section -->
+        <div class="bg-white rounded-xl p-6 mb-8 card-shadow">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                ➕ إضافة طلب جديد
+            </h2>
+            <div class="flex gap-4 items-end">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">رقم التتبع</label>
+                    <input type="text" id="trackingNumber" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="أدخل رقم التتبع...">
+                </div>
+                <button onclick="addOrder()" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                    إضافة الطلب
+                </button>
             </div>
-            <form id="editForm">
-                <input type="hidden" id="editOrderId">
-                <div class="form-group">
-                    <label for="editOrderStatus">حالة الطلب</label>
-                    <select id="editOrderStatus" class="form-control" required>
-                        <option value="تم الشراء">تم الشراء</option>
-                        <option value="تم الشحن للإمارات">تم الشحن للإمارات</option>
-                        <option value="تم الاستلام في الإمارات">تم الاستلام في الإمارات</option>
-                        <option value="تم الشحن للعراق">تم الشحن للعراق</option>
-                        <option value="جاري التجهيز">جاري التجهيز (سوف يصل طلبك خلال 24 ساعة)</option>
+        </div>
 
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn-primary"><i class="fas fa-save"></i> حفظ التغييرات</button>
-                    <button type="button" class="btn-danger" id="cancelEdit">إلغاء</button>
-                </div>
-            </form>
+        <!-- Orders List -->
+        <div class="bg-white rounded-xl p-6 card-shadow">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                📦 قائمة الطلبات
+            </h2>
+            <div id="ordersList" class="space-y-4">
+                <!-- Orders will be loaded here -->
+            </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
+    <!-- Status Update Modal -->
+    <div id="statusModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">تحديث حالة الطلب</h3>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">الحالة الجديدة</label>
+                <select id="newStatus" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <option value="0">تم الشراء</option>
+                    <option value="1">جاري تجهيز الطلب</option>
+                    <option value="2">تم الشحن</option>
+                    <option value="3">تم الاستلام في الكويت</option>
+                    <option value="4">تم الشحن للعراق</option>
+                    <option value="5">تم التسليم</option>
+                </select>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="updateOrderStatus()" 
+                        class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors">
+                    تحديث
+                </button>
+                <button onclick="closeModal()" 
+                        class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg font-medium transition-colors">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 transform transition-all">
+            <div class="text-center mb-6">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                    <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">تأكيد حذف الطلب</h3>
+                <p class="text-gray-600 mb-2">هل أنت متأكد من حذف هذا الطلب؟</p>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                    <p class="text-sm text-red-700">
+                        <span class="font-medium">رقم التتبع:</span> 
+                        <span id="deleteTrackingNumber" class="font-bold"></span>
+                    </p>
+                </div>
+                <p class="text-sm text-red-600 font-medium">⚠️ هذا الإجراء لا يمكن التراجع عنه</p>
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="confirmDelete()" 
+                        class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    نعم، احذف الطلب
+                </button>
+                <button onclick="closeDeleteModal()" 
+                        class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-medium transition-colors">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // تهيئة Firebase
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDEP35xsyNnDFNY4XEjm9ipvTBk44SKQ1Y",
             authDomain: "qq-9acb9.firebaseapp.com",
@@ -286,204 +135,223 @@
         
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        
-        // عند تحميل الصفحة
-        document.addEventListener('DOMContentLoaded', function() {
-            const addOrderForm = document.getElementById('addOrderForm');
-            const ordersTable = document.getElementById('ordersTable');
-            const successAlert = document.getElementById('successAlert');
-            const errorAlert = document.getElementById('errorAlert');
-            const editModal = document.getElementById('editModal');
-            const editForm = document.getElementById('editForm');
-            const closeModal = document.getElementById('closeModal');
-            const cancelEdit = document.getElementById('cancelEdit');
-            const editOrderStatus = document.getElementById('editOrderStatus');
+
+        // Order statuses
+        const statuses = [
+            { name: "تم الشراء", color: "bg-blue-500", icon: "🛒" },
+            { name: "جاري تجهيز الطلب", color: "bg-yellow-500", icon: "📦" },
+            { name: "تم الشحن", color: "bg-purple-500", icon: "🚛" },
+            { name: "تم الاستلام في الكويت", color: "bg-orange-500", icon: "🏢" },
+            { name: "تم الشحن للعراق", color: "bg-indigo-500", icon: "✈️" },
+            { name: "تم التسليم", color: "bg-green-500", icon: "✅" }
+        ];
+
+        let currentOrderId = null;
+        let orderToDelete = null;
+
+        // Add new order
+        function addOrder() {
+            const trackingNumber = document.getElementById('trackingNumber').value.trim();
             
-            // تحميل الطلبات عند فتح الصفحة
-            loadOrders();
-            
-            // إضافة طلب جديد
-            addOrderForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const orderNumber = document.getElementById('orderNumber').value.trim();
-                const orderStatus = document.getElementById('orderStatus').value;
-                
-                if (!orderNumber) {
-                    showError('الرجاء إدخال رقم الطلب');
-                    return;
-                }
-                
-                // التحقق من وجود الطلب مسبقاً
-                database.ref('orders/' + orderNumber).once('value')
-                    .then((snapshot) => {
-                        if (snapshot.exists()) {
-                            showError('رقم الطلب موجود مسبقاً');
-                        } else {
-                            // إضافة الطلب الجديد
-                            database.ref('orders/' + orderNumber).set({
-                                status: orderStatus,
-                                timestamp: firebase.database.ServerValue.TIMESTAMP
-                            })
-                            .then(() => {
-                                showSuccess('تم إضافة الطلب بنجاح');
-                                addOrderForm.reset();
-                                loadOrders();
-                            })
-                            .catch((error) => {
-                                showError('حدث خطأ أثناء إضافة الطلب');
-                                console.error(error);
-                            });
-                        }
-                    })
-                    .catch((error) => {
-                        showError('حدث خطأ أثناء التحقق من رقم الطلب');
-                        console.error(error);
-                    });
-            });
-            
-            // تحميل جميع الطلبات
-            function loadOrders() {
-                database.ref('orders').once('value')
-                    .then((snapshot) => {
-                        ordersTable.innerHTML = '';
-                        
-                        if (snapshot.exists()) {
-                            const orders = snapshot.val();
-                            
-                            // تحويل الكائن إلى مصفوفة وترتيبها حسب التاريخ
-                            const ordersArray = Object.entries(orders).map(([key, value]) => {
-                                return {
-                                    id: key,
-                                    ...value
-                                };
-                            });
-                            
-                            // ترتيب الطلبات من الأحدث إلى الأقدم
-                            ordersArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                            
-                            // عرض الطلبات في الجدول
-                            ordersArray.forEach(order => {
-                                const row = document.createElement('tr');
-                                
-                                // رقم الطلب
-                                const orderNumberCell = document.createElement('td');
-                                orderNumberCell.textContent = order.id;
-                                row.appendChild(orderNumberCell);
-                                
-                                // حالة الطلب
-                                const statusCell = document.createElement('td');
-                                const statusBadge = document.createElement('span');
-                                statusBadge.className = 'status-badge';
-                                statusBadge.textContent = order.status;
-                                statusCell.appendChild(statusBadge);
-                                row.appendChild(statusCell);
-                                
-                                // أزرار الإجراءات
-                                const actionsCell = document.createElement('td');
-                                
-                                // زر التعديل
-                                const editBtn = document.createElement('button');
-                                editBtn.className = 'action-btn edit-btn';
-                                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                                editBtn.addEventListener('click', () => openEditModal(order.id, order.status));
-                                actionsCell.appendChild(editBtn);
-                                
-                                // زر الحذف
-                                const deleteBtn = document.createElement('button');
-                                deleteBtn.className = 'action-btn delete-btn';
-                                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                                deleteBtn.addEventListener('click', () => deleteOrder(order.id));
-                                actionsCell.appendChild(deleteBtn);
-                                
-                                row.appendChild(actionsCell);
-                                ordersTable.appendChild(row);
-                            });
-                        } else {
-                            ordersTable.innerHTML = '<tr><td colspan="3" style="text-align:center;">لا توجد طلبات</td></tr>';
-                        }
-                    })
-                    .catch((error) => {
-                        showError('حدث خطأ أثناء جلب الطلبات');
-                        console.error(error);
-                    });
+            if (!trackingNumber) {
+                alert('يرجى إدخال رقم التتبع');
+                return;
             }
-            
-            // فتح مودال التعديل
-            function openEditModal(orderNumber, currentStatus) {
-                document.getElementById('editOrderId').value = orderNumber;
-                document.getElementById('editOrderStatus').value = currentStatus;
-                editModal.style.display = 'flex';
-            }
-            
-            // إغلاق مودال التعديل
-            closeModal.addEventListener('click', () => {
-                editModal.style.display = 'none';
-            });
-            
-            cancelEdit.addEventListener('click', () => {
-                editModal.style.display = 'none';
-            });
-            
-            // حفظ التعديلات
-            editForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const orderNumber = document.getElementById('editOrderId').value;
-                const newStatus = document.getElementById('editOrderStatus').value;
-                
-                database.ref('orders/' + orderNumber).update({
-                    status: newStatus,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                })
+
+            const orderData = {
+                trackingNumber: trackingNumber,
+                status: 0,
+                createdAt: Date.now(),
+                lastUpdated: Date.now()
+            };
+
+            database.ref('orders').push(orderData)
                 .then(() => {
-                    showSuccess('تم تحديث حالة الطلب بنجاح');
-                    editModal.style.display = 'none';
+                    document.getElementById('trackingNumber').value = '';
+                    alert('تم إضافة الطلب بنجاح!');
                     loadOrders();
                 })
                 .catch((error) => {
-                    showError('حدث خطأ أثناء تحديث حالة الطلب');
-                    console.error(error);
+                    alert('حدث خطأ في إضافة الطلب: ' + error.message);
+                });
+        }
+
+        // Load orders from Firebase
+        function loadOrders() {
+            database.ref('orders').on('value', (snapshot) => {
+                const orders = snapshot.val();
+                const ordersList = document.getElementById('ordersList');
+                
+                if (!orders) {
+                    ordersList.innerHTML = '<p class="text-gray-500 text-center py-8">لا توجد طلبات حالياً</p>';
+                    return;
+                }
+
+                let ordersHTML = '';
+                Object.keys(orders).forEach(orderId => {
+                    const order = orders[orderId];
+                    const status = statuses[order.status];
+                    const progress = ((order.status + 1) / statuses.length) * 100;
+                    
+                    ordersHTML += `
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-800">رقم التتبع: ${order.trackingNumber}</h3>
+                                    <p class="text-sm text-gray-500">تاريخ الإضافة: ${new Date(order.createdAt).toLocaleDateString('ar-EG')}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="openStatusModal('${orderId}')" 
+                                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm transition-colors">
+                                        تعديل الحالة
+                                    </button>
+                                    <button onclick="deleteOrder('${orderId}', '${order.trackingNumber}')" 
+                                            class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-lg text-sm transition-colors">
+                                        🗑️ حذف
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium text-gray-700">حالة الطلب:</span>
+                                    <span class="status-badge ${status.color} text-white px-3 py-1 rounded-full text-sm font-medium">
+                                        ${status.icon} ${status.name}
+                                    </span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="progress-bar h-2 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-xs">
+                                ${statuses.map((s, index) => `
+                                    <div class="text-center p-2 rounded ${index <= order.status ? s.color + ' text-white' : 'bg-gray-100 text-gray-500'}">
+                                        <div class="text-lg mb-1">${s.icon}</div>
+                                        <div class="font-medium">${s.name}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                ordersList.innerHTML = ordersHTML;
+            });
+        }
+
+        // Open status update modal
+        function openStatusModal(orderId) {
+            currentOrderId = orderId;
+            document.getElementById('statusModal').classList.remove('hidden');
+            document.getElementById('statusModal').classList.add('flex');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('statusModal').classList.add('hidden');
+            document.getElementById('statusModal').classList.remove('flex');
+            currentOrderId = null;
+        }
+
+        // Update order status manually
+        function updateOrderStatus() {
+            if (!currentOrderId) return;
+            
+            const newStatus = parseInt(document.getElementById('newStatus').value);
+            
+            database.ref(`orders/${currentOrderId}`).update({
+                status: newStatus,
+                lastUpdated: Date.now()
+            })
+            .then(() => {
+                alert('تم تحديث حالة الطلب بنجاح!');
+                closeModal();
+            })
+            .catch((error) => {
+                alert('حدث خطأ في تحديث الحالة: ' + error.message);
+            });
+        }
+
+        // Delete order function
+        function deleteOrder(orderId, trackingNumber) {
+            orderToDelete = { id: orderId, trackingNumber: trackingNumber };
+            document.getElementById('deleteTrackingNumber').textContent = trackingNumber;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+        }
+
+        // Close delete modal
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.getElementById('deleteModal').classList.remove('flex');
+            orderToDelete = null;
+        }
+
+        // Confirm delete
+        function confirmDelete() {
+            if (!orderToDelete) return;
+            
+            database.ref(`orders/${orderToDelete.id}`).remove()
+                .then(() => {
+                    alert('تم حذف الطلب بنجاح! ✅');
+                    closeDeleteModal();
+                })
+                .catch((error) => {
+                    alert('حدث خطأ في حذف الطلب: ' + error.message);
+                });
+        }
+
+        // Auto-update order statuses every 3 days
+        function checkAndUpdateStatuses() {
+            database.ref('orders').once('value', (snapshot) => {
+                const orders = snapshot.val();
+                if (!orders) return;
+
+                const now = Date.now();
+                const threeDays = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+
+                Object.keys(orders).forEach(orderId => {
+                    const order = orders[orderId];
+                    const timeSinceLastUpdate = now - order.lastUpdated;
+                    
+                    // Auto-update if 3 days have passed and not at final status
+                    if (timeSinceLastUpdate >= threeDays && order.status < 4) {
+                        const newStatus = order.status + 1;
+                        database.ref(`orders/${orderId}`).update({
+                            status: newStatus,
+                            lastUpdated: now
+                        });
+                    }
+                    
+                    // Special case: Move from status 4 to 5 immediately
+                    if (order.status === 4 && timeSinceLastUpdate >= 1000) { // 1 second delay for immediate update
+                        database.ref(`orders/${orderId}`).update({
+                            status: 5,
+                            lastUpdated: now
+                        });
+                    }
                 });
             });
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrders();
             
-            // حذف الطلب
-            function deleteOrder(orderNumber) {
-                if (confirm('هل أنت متأكد من حذف هذا الطلب؟')) {
-                    database.ref('orders/' + orderNumber).remove()
-                        .then(() => {
-                            showSuccess('تم حذف الطلب بنجاح');
-                            loadOrders();
-                        })
-                        .catch((error) => {
-                            showError('حدث خطأ أثناء حذف الطلب');
-                            console.error(error);
-                        });
-                }
-            }
+            // Check for status updates every hour
+            setInterval(checkAndUpdateStatuses, 60 * 60 * 1000);
             
-            // عرض رسالة نجاح
-            function showSuccess(message) {
-                successAlert.textContent = message;
-                successAlert.style.display = 'block';
-                errorAlert.style.display = 'none';
-                
-                setTimeout(() => {
-                    successAlert.style.display = 'none';
-                }, 3000);
-            }
-            
-            // عرض رسالة خطأ
-            function showError(message) {
-                errorAlert.textContent = message;
-                errorAlert.style.display = 'block';
-                successAlert.style.display = 'none';
-                
-                setTimeout(() => {
-                    errorAlert.style.display = 'none';
-                }, 3000);
+            // Initial check
+            checkAndUpdateStatuses();
+        });
+
+        // Handle Enter key in tracking number input
+        document.getElementById('trackingNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addOrder();
             }
         });
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97b9cec45575a626',t:'MTc1NzI4NTg3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
